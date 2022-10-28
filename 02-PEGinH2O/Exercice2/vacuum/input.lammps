@@ -1,0 +1,47 @@
+# pure bulk water system
+# Written by Simon Gravelle
+# My personal page : https://simongravelle.github.io/
+# My Github account: https://github.com/simongravelle/
+# LAMMPS tutorials for beginners: https://lammpstutorials.github.io/
+
+units real
+atom_style full
+bond_style harmonic
+angle_style charmm
+dihedral_style charmm
+pair_style lj/cut/tip4p/long 1 2 1 1 0.1546 12.0
+kspace_style pppm/tip4p 1.0e-4
+
+special_bonds lj 0.0 0.0 0.5
+
+read_data PEG.data # we start from the previously equilibrated PEG molecule
+change_box all x final -30 30 y final -30 30 z final -30 30
+include ../PARM.lammps
+
+group PEG type 3 4 5 6 7
+group oxygen_end1 id 65
+group oxygen_end2 id 4
+
+fix mynve all nve
+fix myber all temp/berendsen 300 300 100
+
+fix myrct PEG recenter INIT INIT INIT # let us keep the PEG molecule in place
+
+dump mydmp all atom 1000 dump.lammpstrj
+thermo 1000
+# add those extra line to measure the end-to-end distance
+variable x1 equal xcm(oxygen_end1,x)
+variable x2 equal xcm(oxygen_end2,x)
+variable delta_x equal v_x1-v_x2
+variable y1 equal xcm(oxygen_end1,y)
+variable y2 equal xcm(oxygen_end2,y)
+variable delta_y equal v_y1-v_y2
+variable z1 equal xcm(oxygen_end1,z)
+variable z2 equal xcm(oxygen_end2,z)
+variable delta_z equal v_z1-v_z2
+variable delta_r equal sqrt(v_delta_x^2+v_delta_y^2+v_delta_z^2)
+fix myat1 all ave/time 10 10 100 v_delta_r file end-to-end-distance.dat
+
+timestep 1
+thermo 1000
+run 100000

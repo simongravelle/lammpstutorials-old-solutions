@@ -1,0 +1,39 @@
+# LAMMPS input script
+# author : Simon Gravelle
+# lammpstutorials.github.io
+
+# -------------	Initialization
+units			lj
+dimension 		3
+atom_style		atomic
+pair_style		lj/cut 2.5
+boundary		p p p
+
+# ------------- System definition
+# let us start from the end of input_03
+read_data		data.equil3D.lammps
+
+# ------------- Simulation settings
+mass			1 1
+mass			2 1
+pair_coeff		1 1 1.0 1.0
+pair_coeff		2 2 0.5 3.0
+neigh_modify	every 1 delay 5 check yes
+dump 			mydmp all atom 500 dump.lammpstrj
+
+# let us extract the total energy of the system over time
+variable		total_energy equal etotal
+fix				myat1 all ave/time 10 100 1000 v_total_energy file totalenergyvstime.dat
+
+# ------------- Run
+# no need to recreate the velocity, system is already equilibrated
+#velocity 		all create 1.0 4928459 mom yes rot yes dist gaussian
+fix				mynve all nve
+# no fix langevin, otherwise we are effectively in the NVT ensemble
+# since langevin controls the temperature
+#fix			mylgv all langevin 1.0 1.0 0.1 1530917 zero yes
+#fix				myefn all enforce2d
+timestep		0.001 # reduce the timestep for better energy conservation
+thermo			50000
+run				500000
+
