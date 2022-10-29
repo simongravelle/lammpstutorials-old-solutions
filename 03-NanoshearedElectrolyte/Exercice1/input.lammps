@@ -13,7 +13,7 @@ pair_style lj/cut/tip4p/long 1 2 1 1 0.1546 12.0
 kspace_style pppm/tip4p 1.0e-4
 
 # System definition
-read_data data.lammps # start from equilibrated configuration
+read_data system.data # start from equilibrated configuration at 360 K (for faster sampling)
 change_box all z final -40 40 # recude the box size
 
 # Simulation settings
@@ -32,18 +32,14 @@ group gbot region rbot
 group gwalltop intersect gwall gtop
 group gwallbot intersect gwall gbot
 
-# visualisation
-write_dump all atom dump.lammpstrj # use this trick to reduce the output size
-dump all xtc 100 dump.xtc # use this trick to reduce the output size
-thermo 50
-
 # Dynamics
+fix mymom all momentum 100 linear 1 1 1 # I cancel the whole momuntum every 100 timestep
 fix mynve all nve
 compute tliq gliquid temp
-fix myber1 gliquid temp/berendsen 300 300 100
+fix myber1 gliquid temp/berendsen 360 360 100 # increase the temperature for faster sampling
 fix_modify myber1 temp tliq
 compute twall gwall temp
-fix myber2 gwall temp/berendsen 300 300 100
+fix myber2 gwall temp/berendsen 360 360 100 # increase the temperature for faster sampling
 fix_modify myber2 temp twall
 fix myshk gH2O shake 1.0e-4 200 0 b 1 a 1
 fix myrct all recenter NULL NULL INIT
@@ -53,103 +49,23 @@ fix myrct all recenter NULL NULL INIT
 # sampling for Na and Cl, if you want smooth and well averaged profile, run 
 # longer simulation 
 compute chunk_water gH2O chunk/atom bin/1d z 0.0 0.2
-fix myac1 gH2O ave/chunk 10 5000 50000 chunk_water density/mass file density_water.dat
+fix myac1 gH2O ave/chunk 10 10000 100000 chunk_water density/mass file density_water.dat
 compute chunk_Na gNa chunk/atom bin/1d z 0.0 0.2
-fix myac2 gNa ave/chunk 10 5000 50000 chunk_Na density/mass file density_Na.dat
+fix myac2 gNa ave/chunk 10 10000 100000 chunk_Na density/mass file density_Na.dat
 compute chunk_Cl gCl chunk/atom bin/1d z 0.0 0.2
-fix myac3 gCl ave/chunk 10 5000 50000 chunk_Cl density/mass file density_Cl.dat
+fix myac3 gCl ave/chunk 10 10000 100000 chunk_Cl density/mass file density_Cl.dat
 
 # msd measurement : see the python script
+compute mymsd all msd
+variable xymsd equal c_mymsd[1]+c_mymsd[2]
+fix myat1 all ave/time 10 100 1000 v_xymsd file msd_xy.dat
+
+# visualisation
+write_dump all atom dump.lammpstrj # use this trick to reduce the output size
+dump mydmp all xtc 100 dump.xtc # use this trick to reduce the output size
+thermo 500
 
 timestep 1.0
-run 50000
-write_data data.lammps
+run 100000
+write_data system.data
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# LAMMPS input script
-# author : Simon Gravelle
-# https://lammpstutorials.github.io
-
-# Initialisation
-boundary p p p
-units real
-atom_style full
-bond_style harmonic
-angle_style harmonic
-pair_style lj/cut/tip4p/long 1 2 1 1 0.1546 12.0
-kspace_style pppm/tip4p 1.0e-4
-
-# System definition
-read_data data.lammps # start from equilibrated configuration
-change_box all z final -40 40 # recude the box size
-
-# ------------- Simulation settings
-include PARM.lammps
-group gH2O type 1 2
-group gNa type 3
-group gCl type 4
-group gliquid type 1 2 3 4
-group gtopwall type 5
-group gbotwall type 6
-group gwall type 5 6
-
-
-dump mydmp all atom 1000 exercice1.lammpstrj
-
-# ------------- Run
-
-# ------------- To maintain the wall rigid
-fix mysf1 gtopwall setforce 0 0 NULL
-fix mysf2 gbotwall setforce 0 0 NULL
-fix myaf1 gtopwall aveforce NULL NULL 0
-fix myaf2 gbotwall aveforce NULL NULL 0
-neigh_modify exclude group gwall gwall
-
-# ------------- Dynamics
-fix mynve all nve
-compute tliq gliquid temp
-fix myber gliquid temp/berendsen 300 300 100
-fix_modify myber temp tliq
-fix myshk gH2O shake 1.0e-4 200 0 b 1 a 1
-fix myrct all recenter NULL NULL INIT
-
-# ------------- Density profile measurement
-# ------------- Warning : 50000 timesteps is too small to obtain a reasonable
-# sampling for Na and Cl, if you want smooth and well averaged profile, run 
-# longer simulation 
-compute chunk_water gH2O chunk/atom bin/1d z 0.0 0.2
-fix myac1 gH2O ave/chunk 10 5000 50000 chunk_water density/mass file density_water.dat
-compute chunk_Na gNa chunk/atom bin/1d z 0.0 0.2
-fix myac2 gNa ave/chunk 10 5000 50000 chunk_Na density/mass file density_Na.dat
-compute chunk_Cl gCl chunk/atom bin/1d z 0.0 0.2
-fix myac3 gCl ave/chunk 10 5000 50000 chunk_Cl density/mass file density_Cl.dat
-
-timestep 1.0
-thermo 5000
-thermo_modify temp tliq
-run 50000
-write_data exercice1.data
