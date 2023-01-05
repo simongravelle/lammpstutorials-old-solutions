@@ -1,8 +1,10 @@
-# pure bulk water system
+# <<ball>> of PEG in the middle of water
 # Written by Simon Gravelle
 # My personal page : https://simongravelle.github.io/
 # My Github account: https://github.com/simongravelle/
 # LAMMPS tutorials for beginners: https://lammpstutorials.github.io/
+
+# note : use longer equilibration f you ever use this script for actual research
 
 units real
 atom_style full
@@ -14,11 +16,28 @@ kspace_style pppm/tip4p 1.0e-4
 special_bonds lj 0.0 0.0 0.5
 
 read_data PEG.data # I start from the previously generated PEG 
-change_box all x final -10 10 y final -10 10 z final -10 10 # let us make a smaller cubic box
-molecule h2omol H2OTip4p.txt
-create_atoms 0 random 300 45615 NULL mol h2omol 454756 # let us add some water molecules
+change_box all x final -4 4 y final -4 4 z final -4 4 # let us make a smaller cubic box
+
+replicate 2 2 2
 
 include PARM.lammps
+
+# Let us impose a strong damping to the system
+# This is equivalent to performing an energy minimisation
+fix mynve all nve/limit 0.1
+fix myber all temp/berendsen 1 1 1
+thermo 1000
+timestep 0.5 # reduce a bit the timestep to avoid "out of range atom error"
+run 1000
+
+change_box all x final -27 27 y final -27 27 z final -27 27 # make space around PEG
+displace_atoms all move -4 -4 -4 units box
+
+run 1000 # equilibrate water
+
+molecule h2omol H2OTip4p.txt
+lattice sc 3
+create_atoms 0 box mol h2omol 454756 # let us add some water molecules
 
 group H2O type 1 2
 group PEG type 3 4 5 6 7
@@ -26,35 +45,36 @@ group PEG type 3 4 5 6 7
 delete_atoms overlap 2 H2O H2O mol yes # delete the H2O overlaping with others H2O
 delete_atoms overlap 2 H2O PEG mol yes # delete the H2O overlaping with PEG
 
-# Let us impose a strong damping to the system
-# This is equivalent to performing an energy minimisation
-fix mynve all nve/limit 0.1
-fix myber all temp/berendsen 1 1 1
 fix myshk H2O shake 1.0e-5 200 0 b 1 a 1 mol h2omol
+
 dump mydmp all atom 1000 dump.init.lammpstrj
-thermo 1000
-timestep 0.5 # reduce a bit the timestep to avoid "out of range atom error"
-run 1000
 
-# let us equilibrate at T=300 K and p=1 atm
-unfix myber
-unfix mynve 
-fix mynpt all npt temp 300 300 100 iso 1 1 1000
-run 10000
-
-# Let us replicate the system
-# and equilibrate it further
-unfix mynpt
-unfix myshk # must be unfixed before replicate
-undump mydmp 
-replicate 2 2 2
-fix myshk H2O shake 1.0e-5 200 0 b 1 a 1 mol h2omol
-fix mynpt all npt temp 300 300 100 iso 1 1 1000
-dump mydmp all atom 1000 dump.lammpstrj
 run 5000
 
-# final run with larger timestep
-timestep 1.0
-run 30000 # make a longer run to propertly mix the system, or use a larger temperature
+unfix myber
+unfix mynve 
+fix mynvt all nvt temp 300 300 100 # equilibrate water
+fix mystf PEG setforce 0 0 0 # maintain PEG fix for now
+velocity PEG set 0 0 0
 
-write_data final.data
+# let us equilibrate at T=300 K and p=1 atm
+timestep 1.0
+run 10000
+unfix mynvt
+unfix mystf
+
+fix mynpt all npt temp 300 300 100 iso 1000 1000 1000
+fix myrct PEG recenter INIT INIT INIT # keep the PEG in the center
+run 10000
+
+fix mynpt all npt temp 300 300 100 iso 1 1 1000
+fix myrct PEG recenter INIT INIT INIT # keep the PEG in the center
+run 10000
+
+write_data equilibrated.data
+undump mydmp
+
+dump mydmp all atom 25 dump.lammpstrj
+
+# production run
+run 2500
