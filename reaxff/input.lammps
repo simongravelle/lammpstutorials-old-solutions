@@ -1,0 +1,40 @@
+# SiO amorphous silica deformed with reaxff potential
+
+units real
+atom_style full
+
+read_data decorated.data
+
+mass 1 28.0855 # Si
+mass 2 15.999 # O
+mass 3 1.008 # hydrogen
+
+pair_style reaxff NULL safezone 3.0 mincap 150
+pair_coeff * * reaxCHOFe.ff Si O H
+fix myqeq all qeq/reaxff 1 0.0 10.0 1.0e-6 reaxff maxiter 400
+
+neighbor 0.5 bin
+neigh_modify every 5 delay 0 check yes 
+
+group grpSi type 1
+group grpO type 2
+group grpH type 3
+variable totqSi equal charge(grpSi)
+variable totqO equal charge(grpO)
+variable totqH equal charge(grpH)
+variable nSi equal count(grpSi)
+variable nO equal count(grpO)
+variable nH equal count(grpH)
+variable qSi equal v_totqSi/${nSi}
+variable qO equal v_totqO/${nO}
+variable qH equal v_totqH/${nH}
+
+dump dmp all custom 100 dump.lammpstrj id type q x y z
+thermo 100
+thermo_style custom step temp etotal press vol v_qSi v_qO v_qH
+
+fix mynvt all nvt temp 300.0 300.0 100
+timestep 0.5 
+
+thermo 100
+run 10000
