@@ -1,0 +1,38 @@
+# Initialisation
+
+variable T equal 300
+
+units metal
+atom_style full
+boundary p p p
+pair_style airebo 2.5 1 1
+
+# System definition
+read_data cnt.data
+pair_coeff * * CH.airebo C H
+
+# Add 80 hydrogens randomly
+# Note: this command may not work for older lammps version - make sure to install a recente version (at least 22 Dec 2022)
+create_atoms 2 random 80 12345 NULL overlap 2.0 maxtry 50
+
+group cnt type 1
+
+# add velocity to all
+velocity all create ${T} 48455 mom yes rot yes
+fix mynve all nve
+
+# appy berendsen to all
+fix myber all temp/berendsen ${T} ${T} 0.1
+
+# prevent the cnt from moving
+fix myspring cnt spring/self 1
+
+dump mydmp all atom 1000 dump.lammpstrj
+
+thermo 1000
+
+# Run
+timestep 0.0005
+run 5000000 # run for a relatively long time 
+
+
