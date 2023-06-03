@@ -3,3 +3,4 @@ log.*
 dump.*
 *.lammpstrj
 *.xtc
+**/_*
