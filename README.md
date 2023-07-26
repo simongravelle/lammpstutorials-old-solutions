@@ -4,7 +4,7 @@ Those are the solutions to all the exercises found on [lammpstutorials](https://
 
 <p float="left">
   <a href="https://lammpstutorials.github.io">
-  <img src="figures/screenshot_readme_lammps_tutorials_1.png" width="100%" /></a>
+  <img src="lammpsstutorials.githug.io.png" width="100%" /></a>
 </p>
 
 
