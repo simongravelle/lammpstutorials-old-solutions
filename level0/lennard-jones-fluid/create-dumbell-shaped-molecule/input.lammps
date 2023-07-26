@@ -1,0 +1,69 @@
+# LAMMPS input script
+# author : Simon Gravelle
+# lammpstutorials.github.io
+
+# Initialization
+units lj
+dimension 3
+# one needs an atom style allowing for bonds
+atom_style molecular
+# let us choose the bond as harmonic
+bond_style harmonic
+pair_style lj/cut 2.5
+boundary p p p
+
+# System definition
+# when creating the box, one must allocate space in the memory for the bonds
+region simulation_box block -20 20 -20 20 -20 20
+create_box 2 simulation_box bond/types 2 extra/bond/per/atom 1
+# third important change, one needs to insert molecule
+# from the dumbell.mol template instead of single atoms
+#create_atoms 1 random 1500 341341 simulation_box
+#create_atoms 2 random 100 127569 simulation_box
+molecule dumbell1 dumbell1.mol
+molecule dumbell2 dumbell2.mol
+create_atoms 0 random 10 341341 simulation_box mol dumbell1 8766
+create_atoms 0 random 10 678865 simulation_box mol dumbell2 8751	
+
+# Simulation settings
+mass 1 1
+mass 2 1
+pair_coeff 1 1 1.0 1.0
+pair_coeff 2 2 0.5 3.0
+# one need to set the parameter for the bond
+# the energy of the spring is 5, and the equilibrium distance is 1 or 3
+bond_coeff 1 5 1
+bond_coeff 2 5 3
+neigh_modify every 1 delay 5 check yes
+dump mydmp all atom 10 dump.lammpstrj
+
+# Run
+thermo 1000
+
+# for this exercice, we can't use the minimize command
+# minimize 1.0e-4 1.0e-6 1000 10000
+
+# Let us replace the minimize comma	bd with the nve/limit + a langevin thermostat :
+# The command nve/limit limits the motion of the atom to a certain value, very usefull here
+# The idea is to prevent strong motion of the atoms initially
+fix mynve all nve/limit 0.1
+# Let us start with a langevin with stronger temperature damping as what is usual
+fix mylgv all langevin 1 1 0.01 1530917
+# let us start with a smaller timestep
+timestep 0.0005 
+run 2000
+unfix mynve
+unfix mylgv
+
+# For the second step, let us relaxe our constraint by
+# using nve (without limit) and weaker temperature damping
+fix mynve all nve
+fix mylgv all langevin 1 1 0.01 1530917 
+
+run 2000
+
+fix mynve all nve
+fix mylgv all langevin 1 1 0.1 94728
+
+run 40000
+
