@@ -1,0 +1,52 @@
+# LAMMPS input script
+# author : Simon Gravelle
+# lammpstutorials.github.io
+
+# Initialization
+units lj
+dimension 3
+atom_style atomic
+pair_style lj/cut 2.5
+boundary p p p
+
+# System definition
+region simulation_box block -20 20 -20 20 -20 20
+create_box 2 simulation_box
+create_atoms 1 random 1500 341341 simulation_box
+create_atoms 2 random 100 127569 simulation_box
+
+# Simulation settings
+mass 1 1
+mass 2 1
+pair_coeff 1 1 1.0 1.0
+pair_coeff 2 2 0.5 3.0
+neigh_modify every 1 delay 5 check yes
+
+# Run
+thermo 10
+minimize 1.0e-4 1.0e-6 1000 10000
+reset_timestep 0
+
+# Simulation settings
+mass 1 1
+mass 2 1
+pair_coeff 1 1 1.0 1.0
+pair_coeff 2 2 0.5 3.0
+neigh_modify every 1 delay 5 check yes
+dump mydmp all atom 500 dump.lammpstrj
+
+# let us add a force to all the atom in the x direction
+fix myaddforce all addforce 0.05 0 0
+
+# let us also measure the net velocity of mytype1 in the direction of the forcing
+group mytype1 type 1
+variable velx equal vcm(mytype1,x)
+fix myat1 all ave/time 10 10 100 v_velx file velocity_vs_time.dat
+
+# Run
+velocity all create 1.0 4928459 mom yes rot yes dist gaussian
+fix mynve all nve
+fix mylgv all langevin 1.0 1.0 0.1 1530917 zero yes
+timestep 0.005
+thermo 50000
+run 1500000
