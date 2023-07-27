@@ -49,4 +49,4 @@ fix mylgv all langevin 1 1 0.01 1530917
 run 2000
 
 # now the system is relaxed in an acceptable state and the simulation can start
-write_data data.min.lammps
+write_data system.data
