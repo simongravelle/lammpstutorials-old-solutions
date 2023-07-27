@@ -4,7 +4,7 @@
 
 Simply remove the thermostat and print the temperature in 
 a file using the fix ave/time, see my 
-[input](./stetching-isolated-nanotube/input.lammps) here.
+[input](./isolated-nanotube/input.lammps) here.
 
 ## Deforming membrane
 
