@@ -10,8 +10,8 @@ pair_style lj/cut 2.5
 boundary p p p
 
 # Let us start from the equilibrated configuration
-# Note the the equilibrated configuration contains the 
-# atoms velocities, i.e. it contains a temperature.
+# Note that the equilibrated configuration contains the 
+# atoms velocities, i.e. it contains the temperature.
 read_data data.equil3D.lammps
 
 # Simulation settings (not saved by write_data, so must be redefined)
@@ -20,17 +20,16 @@ mass 2 1
 pair_coeff 1 1 1.0 1.0
 pair_coeff 2 2 0.5 3.0
 neigh_modify every 1 delay 5 check yes
-dump mydmp all atom 500 dump.lammpstrj
-
-# let us extract the total energy of the system over time
-variable total_energy equal etotal
-fix myat1 all ave/time 10 100 1000 v_total_energy file totalenergyvstime.dat
-
 # Run
 # No need to recreate the velocity, system is already equilibrated
 # velocity all create 1.0 4928459 mom yes rot yes dist gaussian
 
 fix mynve all nve
+
+# let us extract the total energy of the system over time
+variable total_energy equal etotal
+fix myat1 all ave/time 10 100 1000 v_total_energy file totalenergyvstime.dat
+dump mydmp all atom 500 dump.lammpstrj
 
 # No fix langevin, i.e. no thermostat
 # since langevin controls the temperature
