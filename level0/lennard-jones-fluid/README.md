@@ -83,4 +83,18 @@ the average velocity scales linearly with the force.
 The first important step, when creating molecules, is to generate 
 molecule templates. Here, two templates were created for both 
 molecules types, see [here](./create-dumbell-shaped-molecule/dumbell1.mol)
-and [here](./create-dumbell-shaped-molecule/dumbell2.mol).
+and [here](./create-dumbell-shaped-molecule/dumbell2.mol). Its important to
+keep those files consistent with the LAMMPS documentation. Here, each molecules
+constraints 2 atoms, linked by one single bond.
+
+In the [input](./create-dumbell-shaped-molecule/input.lammps) file, the atom_style
+was changed to molecular, which allows atoms to be linked by bonds. The bond-style
+harmonic was chosen.
+
+When creating the box, it is important to add the commands bond/types and extra/bond/per/atom
+in order to allocate memory space for the bonds. Molecules templates can be imported
+with the molecule command, and used in combination with the create_atoms command 
+to insert molecules in the box. 
+
+The last important step is to define the bonds properties using the 
+bond_coeff. 
