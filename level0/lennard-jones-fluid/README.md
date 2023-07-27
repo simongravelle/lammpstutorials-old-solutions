@@ -65,4 +65,22 @@ bring the system toward a more acceptable state.
 
 ## Non-equilibrium simulation
 
+The fix addforce command with an added force of 0.05 (no units)
+is used to induce the motion of the atoms, see the
+[input](./non-equilibrium-simulation/input.lammps).
+
+The velocity of the particle in the direction x can be extracted using
+the variable vcm. As can be seen in the velocity_vs_time.dat file, 
+the average velocity quickly reaches 0.005 (unitless).
+
+To make sure that the forcing does not bring the system in the 
+non-linear response regime, which is expected at very large forcing,
+one must always test different values for the force and ensure that 
+the average velocity scales linearly with the force.
+
 ## Dumbbell molecules
+
+The first important step, when creating molecules, is to generate 
+molecule templates. Here, two templates were created for both 
+molecules types, see [here](./create-dumbell-shaped-molecule/dumbell1.mol)
+and [here](./create-dumbell-shaped-molecule/dumbell2.mol).

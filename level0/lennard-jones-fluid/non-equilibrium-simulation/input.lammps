@@ -29,9 +29,6 @@ reset_timestep 0
 
 dump mydmp all atom 500 dump.lammpstrj
 
-# Let us add a force to all the atom in the x direction
-fix myaddforce all addforce 0.05 0 0
-
 # Let us also measure the net velocity of mytype1 in the direction of the forcing
 group mytype1 type 1
 variable velx equal vcm(mytype1,x)
@@ -41,6 +38,10 @@ fix myat1 all ave/time 10 10 100 v_velx file velocity_vs_time.dat
 velocity all create 1.0 4928459 mom yes rot yes dist gaussian
 fix mynve all nve
 fix mylgv all langevin 1.0 1.0 0.1 1530917 zero yes
+
+# Let us add a force to all the atom in the x direction
+fix myaddforce all addforce 0.05 0 0
+
 timestep 0.005
 thermo 50000
 run 1500000
