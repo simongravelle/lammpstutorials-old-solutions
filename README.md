@@ -7,5 +7,4 @@ Those are the solutions to all the exercises found on [lammpstutorials](https://
   <img src="lammpsstutorials.githug.io.png" width="100%" /></a>
 </p>
 
-
-Feel free to contact me if you notice something missing or inconsistent using simon.gravelle@live.fr
+Feel free to contact me by [email](simon.gravelle@live.fr) if you notice something missing or inconsistent.
