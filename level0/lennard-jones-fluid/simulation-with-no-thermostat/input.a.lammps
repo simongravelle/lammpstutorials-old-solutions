@@ -38,4 +38,4 @@ fix mylgv all langevin 1.0 1.0 0.1 1530917 zero yes
 timestep 0.005
 thermo 5000
 run 10000
-write_data data.equil3D.lammps
+write_data system.data

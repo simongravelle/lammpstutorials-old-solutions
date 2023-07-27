@@ -12,7 +12,7 @@ boundary p p p
 # Let us start from the equilibrated configuration
 # Note that the equilibrated configuration contains the 
 # atoms velocities, i.e. it contains the temperature.
-read_data data.equil3D.lammps
+read_data system.data
 
 # Simulation settings (not saved by write_data, so must be redefined)
 mass 1 1
@@ -29,6 +29,12 @@ fix mynve all nve
 # let us extract the total energy of the system over time
 variable total_energy equal etotal
 fix myat1 all ave/time 10 100 1000 v_total_energy file totalenergyvstime.dat
+# optionally, kinetic energy and potential energy can be extracted separately
+variable kinetic_energy equal ke
+fix myat2 all ave/time 10 100 1000 v_kinetic_energy file kineticenergyvstime.dat
+variable potential_energy equal pe
+fix myat3 all ave/time 10 100 1000 v_potential_energy file potentialenergyvstime.dat
+
 dump mydmp all atom 500 dump.lammpstrj
 
 # No fix langevin, i.e. no thermostat
