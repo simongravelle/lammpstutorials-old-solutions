@@ -20,12 +20,12 @@ kspace_style pppm/tip4p 1.0e-5
 
 special_bonds lj 0.0 0.0 0.5 coul 0.0 0.0 0.833
 
-read_data zif-8.data
+read_data water-filled.data # zif-8.data
 
 include parm.lammps
 molecule water_mol water.mol
 
-create_atoms 0 random 10 456415 NULL mol water_mol 454756 maxtry 50 overlap 3
+#create_atoms 0 random 10 456415 NULL mol water_mol 454756 maxtry 50 overlap 3
 
 group ZIF type ${C1} ${C2} ${C3} ${H2} ${H3} ${N} ${Zn}
 group H2O type ${OW} ${HW}
@@ -52,7 +52,21 @@ fix_modify mynvt_h2o temp temp_H2O
 fix mynvt_zif ZIF nvt temp ${T} ${T} 100
 fix_modify mynvt_zif temp temp_ZIF
 
-fix fgcmc H2O gcmc 500 ${attempt} 0 0 ${rdm} ${T} -5 0.1 mol water_mol tfac_insert ${tfac} group H2O shake myshk full_energy pressure 1000
+#fix fgcmc H2O gcmc 500 ${attempt} 0 0 ${rdm} ${T} -5 0.1 mol water_mol tfac_insert ${tfac} group H2O shake myshk full_energy pressure 5000
 
-run 10000
-write_dump all atom dump.lammpstrj
+#run 100000
+#unfix fgcmc
+#write_data water-filled.data
+
+#write_dump all atom dump.lammpstrj
+
+region forvideo block -7 9 -8.5 8.5 -10 7.7
+group in region forvideo
+group water_in intersect H2O in 
+group water_in include molecule
+group ZIF_in intersect ZIF in
+group forvideo union water_in ZIF_in
+
+dump dmp forvideo atom 5 dump.lammpstrj
+
+run 5000
