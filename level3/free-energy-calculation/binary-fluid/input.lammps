@@ -6,8 +6,8 @@
 variable sigma equal 3.405 # Angstrom
 variable epsilon equal 0.238 # Kcal/mol
 variable U0 equal 1.0 # Kcal/mol
-variable dlt equal 0.5 # Angstrom
-variable x0 equal 5.0 # Angstrom
+variable dlt equal 0.2 # Angstrom
+variable x0 equal 12.5 # Angstrom
 
 # initialise the simulation
 units real
@@ -21,7 +21,7 @@ region myreg block -25 25 -5 5 -25 25
 # create 2 species
 create_box 2 myreg
 create_atoms 1 random 60 341341 myreg
-create_atoms 2 random 20 470498 myreg
+create_atoms 2 random 60 470498 myreg
 
 # settings
 # here I give the same parameters to both species, but you can make a different choice
