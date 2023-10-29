@@ -17,7 +17,7 @@ pair_modify shift yes
 boundary p p p
 
 # define the system
-region myreg block -25 25 -20 20 -20 20
+region myreg block -25 25 -5 5 -25 25
 # create 2 species
 create_box 2 myreg
 create_atoms 1 random 60 341341 myreg
@@ -45,17 +45,17 @@ variable F2 atom -${U0}/((x-${x0})^2/${dlt}^2+1)/${dlt}+${U0}/((x+${x0})^2/${dlt
 fix myadf2 t2 addforce v_F2 0.0 0.0 energy v_U2
 fix_modify myadf2 energy yes
 
-region mymes block -5 5 INF INF INF INF 
+region mymes block -${x0} ${x0} INF INF INF INF 
 variable n_center1 equal count(t1,mymes)
 variable n_center2 equal count(t2,mymes)
-fix myat1 all ave/time 10 100 1000 v_n_center1 v_n_center2 file density_evolution_swap.dat
+fix myat1 all ave/time 10 100 1000 v_n_center1 v_n_center2 file density_evolution.dat
 
 fix mynve all nve
-fix mylgv all langevin 119.8 119.8 100 1530917
+fix mylgv all langevin 119.8 119.8 50 1530917
 
-dump mydmp all atom 10000 dump.lammpstrj
+dump mydmp all atom 1000 dump.lammpstrj
 
 timestep 2.0
 thermo 10000
-run 1000000
+run 2000000
 

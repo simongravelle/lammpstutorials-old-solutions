@@ -5,7 +5,7 @@
 # define a bunch of variables
 variable sigma equal 3.405 # Angstrom
 variable epsilon equal 0.238 # Kcal/mol
-variable U0 equal 2*${epsilon} # Kcal/mol
+variable U0 equal 1.5*${epsilon} # Kcal/mol
 variable dlt equal 0.5 # Angstrom
 variable x0 equal 5.0 # Angstrom
 
@@ -17,7 +17,7 @@ pair_modify shift yes
 boundary p p p
 
 # define the system
-region myreg block -25 25 -20 20 -20 20
+region myreg block -25 25 -5 5 -25 25
 create_box 1 myreg
 create_atoms 1 random 60 341341 myreg
 
@@ -35,27 +35,24 @@ variable F atom ${U0}/((x-${x0})^2/${dlt}^2+1)/${dlt}-${U0}/((x+${x0})^2/${dlt}^
 fix myadf all addforce v_F 0.0 0.0 energy v_U
 fix_modify myadf energy yes
 
-region mymes block -5 5 INF INF INF INF 
+region mymes block -${x0} ${x0} INF INF INF INF 
 variable n_center equal count(all,mymes)
-fix myat1 all ave/time 10 100 1000 v_n_center file density_evolution_mc.dat
+fix myat1 all ave/time 10 100 1000 v_n_center file density_evolution_md.dat
 
-# no nve, no moleculat dynamics, only monte carlo move
-# 60 monte carlo are attempted every step
-fix mymc all gcmc 1 0 60 1 29494 119.8 0 0.5 full_energy
+fix mynve all nve
+fix mylgv all langevin 119.8 119.8 50 1530917
 
-dump mydmp all atom 10000 dump.lammpstrj
+dump mydmp all atom 10000 dump.md.lammpstrj
 
 timestep 2.0
 thermo 1000
 run 10000
-unfix mymc # necessary before reset_timestep
 unfix myat1
+undump mydmp
 reset_timestep 0
 
-fix mymc all gcmc 1 0 60 1 29494 119.8 0 0.5 full_energy
-
 compute cc1 all chunk/atom bin/1d x 0.0 1.0
-fix myac all ave/chunk 10 1000 10000 cc1 density/number file density_mc.dat
+fix myac all ave/chunk 10 1000 10000 cc1 density/number file density_md.dat
 
 run 100000
 
